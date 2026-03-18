@@ -16,7 +16,8 @@ const StockSchema = new mongoose.Schema({
   
   aiAnalysis: {
     sentimentScore: { type: Number, default: 0 },
-    predictedTrend: { type: String, default: "HOLD" }
+    predictedTrend: { type: String, default: "HOLD" },
+    analyzedHeadlines: [{ type: String }]
   }
 });
 

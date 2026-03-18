@@ -29,7 +29,7 @@ export default function StockPage({ params }) {
     const loadData = async () => {
       try {
         const [currentRes, historyRes] = await Promise.all([
-          fetch(`/api/fetch-stock?ticker=${ticker}`).then(res => res.json()),
+          fetch(`/api/fetch-stock?ticker=${ticker}&includeAi=true`).then(res => res.json()),
           fetch(`/api/stock-history?ticker=${ticker}`).then(res => res.json())
         ]);
 
@@ -148,7 +148,7 @@ export default function StockPage({ params }) {
           </div>
         </div>
 
-        {/* The Graph */}
+        {/* Graph */}
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 shadow-2xl h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
@@ -169,18 +169,40 @@ export default function StockPage({ params }) {
           </ResponsiveContainer>
         </div>
 
-        {/* AI Sentiment Integration Preview */}
-        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 flex items-start gap-4">
-          <div className="bg-blue-900/50 p-3 rounded-lg text-blue-400">
+        {/* AI Sentiment Integration */}
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 flex items-start gap-4 mb-8">
+          <div className="bg-blue-900/50 p-3 rounded-lg text-blue-400 shrink-0">
             <BrainCircuit size={28} />
           </div>
-          <div>
+          <div className="w-full">
             <h3 className="text-xl font-bold mb-1">AI Sentiment Engine</h3>
-            <p className="text-gray-400 mb-3 text-sm">Our Python ML model is currently analyzing news sentiment and technical indicators for this asset.</p>
-            <div className="flex gap-4">
-              <span className="bg-gray-700 px-3 py-1 rounded-md text-sm">Current Trend: <span className="font-bold text-yellow-400">{stockData.aiAnalysis?.predictedTrend || "HOLD"}</span></span>
-              <span className="bg-gray-700 px-3 py-1 rounded-md text-sm">Sentiment Score: <span className="font-bold text-white">{stockData.aiAnalysis?.sentimentScore || 0}/100</span></span>
+            <p className="text-gray-400 mb-4 text-sm">Our Hybrid ML model combines historical price regression with real-time NLP news analysis.</p>
+            
+            <div className="flex gap-4 mb-5">
+              <span className="bg-gray-700 px-3 py-1.5 rounded-md text-sm shadow-inner">
+                Current Trend: <span className="font-bold text-yellow-400 ml-1">{stockData.aiAnalysis?.predictedTrend || "HOLD"}</span>
+              </span>
+              <span className="bg-gray-700 px-3 py-1.5 rounded-md text-sm shadow-inner">
+                Hybrid Score: <span className="font-bold text-white ml-1">{stockData.aiAnalysis?.sentimentScore || 0}/100</span>
+              </span>
             </div>
+
+            {/*Live News Feed*/}
+            {stockData.aiAnalysis?.analyzedHeadlines && stockData.aiAnalysis.analyzedHeadlines.length > 0 && (
+              <div className="pt-4 border-t border-gray-700/70">
+                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  Live Sources Analyzed
+                </h4>
+                <ul className="space-y-2.5">
+                  {stockData.aiAnalysis.analyzedHeadlines.map((headline, idx) => (
+                    <li key={idx} className="text-sm text-gray-300 flex items-start gap-3 leading-snug">
+                      <span className="text-blue-500 mt-0.5 text-xs">■</span>
+                      {headline}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
