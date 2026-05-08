@@ -17,9 +17,10 @@ export async function GET(request) {
     let stockData;
     let aiData = null;
 
-    if (includeAi) {
+if (includeAi) {
       try {
-        const aiResponse = await fetch(`http://127.0.0.1:5000/analyze?ticker=${ticker}`);
+        const AI_SERVER = process.env.AI_ENGINE_URL || 'http://127.0.0.1:5000';
+        const aiResponse = await fetch(`${AI_SERVER}/analyze?ticker=${ticker}`);
         if (aiResponse.ok) {
           const aiJson = await aiResponse.json();
           aiData = {
