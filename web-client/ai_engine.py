@@ -12,29 +12,36 @@ app = Flask(__name__)
 analyzer = SentimentIntensityAnalyzer()
 
 def get_nlp_sentiment(ticker):
-    company = ticker.replace(".NS", "")
-    query = urllib.parse.quote(f"{company} stock India")
-    rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-IN&gl=IN&ceid=IN:en"
-    
     try:
-        req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
-        xml_data = urllib.request.urlopen(req).read()
-        root = ET.fromstring(xml_data)
+        stock = yf.Ticker(ticker)
+        news_data = stock.news
         
-        headlines = [item.find('title').text for item in root.findall('.//channel/item')[:5]]
-        
-        if not headlines:
-            return 50, ["No major breaking news found."]
+        if not news_data:
+            return 50, ["No recent news found for this ticker."]
             
-        total_score = sum([analyzer.polarity_scores(h)['compound'] for h in headlines])
-        avg_score = total_score / len(headlines)
+        headlines = []
+        for article in news_data[:5]:
+            if 'title' in article:
+                headlines.append(article['title'])
+                
+        if not headlines:
+            return 50, ["No readable headlines found."]
+            
+        analyzer = SentimentIntensityAnalyzer()
+        total_score = 0
         
-        sentiment_100 = int(((avg_score + 1) / 2) * 100)
-        return sentiment_100, headlines
-
+        for hl in headlines:
+            vs = analyzer.polarity_scores(hl)
+            total_score += vs['compound']
+            
+        avg_compound = total_score / len(headlines)
+        sentiment_score = int(((avg_compound + 1) / 2) * 100)
+        
+        return sentiment_score, headlines
+        
     except Exception as e:
-        print(f"⚠️ NLP Scraper Error: {e}")
-        return 50, ["Network error while fetching news."]
+        print(f"yfinance news error: {e}")
+        return 50, ["Error fetching live news data."]
 
 def get_ml_prediction(ticker):
     try:
